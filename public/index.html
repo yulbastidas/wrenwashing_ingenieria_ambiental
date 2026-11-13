@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#0b3027"><meta name="description" content="Escanea productos y revisa la evidencia detrás de sus promesas ambientales."><title>EcoLupa — Mira más allá de la etiqueta</title><link rel="stylesheet" href="/style.css?v=app-3"><script type="module" src="/app.js"></script></head>
+<body>
+<svg class="leaf-background" aria-hidden="true" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+  <defs><pattern id="leaf-pattern" width="210" height="180" patternUnits="userSpaceOnUse">
+    <path fill="none" stroke="#729874" stroke-opacity=".22" stroke-width="1.4" d="M13 57Q20 21 63 18Q61 59 24 59M10 68L51 29M132 122Q141 86 180 92Q168 134 139 127M122 138L169 102M15 153Q42 142 59 170Q28 179 15 153Z M14 153L46 166"/>
+  </pattern></defs>
+  <rect width="100%" height="100%" fill="url(#leaf-pattern)"/>
+</svg>
+<header><div class="shell top"><a class="brand" href="/" aria-label="EcoLupa inicio"><span class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 14C4 7 12 4 20 4c0 8-3 15-10 15a5 5 0 0 1-5-5Z"/><path d="M4 21 15 10"/></svg></span>Eco<span>Lupa</span></a><nav aria-label="Secciones"><button data-page="home" aria-current="page"><span aria-hidden="true">⌂</span> Inicio</button><button data-page="scan">Escáner</button><button data-page="history">Historial <span id="count">0</span></button><button data-page="compare">Comparar</button><button data-page="activity">Actividad</button></nav><span class="private"><i></i> Tus consultas, en tu dispositivo</span></div></header>
+<main class="shell">
+<div class="app-topbar"><span class="app-location" id="page-location">Tu espacio de consumo consciente</span><span class="device-badge"><i></i> Guardado en tu dispositivo</span></div>
+<section id="home">
+  <div class="dashboard-heading"><div><span class="section-tag">TU ESPACIO ECOLUPA</span><h1>Compra con<br><em>los ojos abiertos.</em></h1><p>Escanea, descubre y guarda lo que importa.</p></div><span class="dashboard-mark" aria-hidden="true">✳</span></div>
+  <div class="home-grid">
+    <button class="scan-launch" id="launch-scan">
+      <span class="launch-tag">EMPIEZA AQUÍ <span>↗</span></span>
+      <span class="scan-orb" aria-hidden="true"><svg viewBox="0 0 120 100" fill="none" stroke="currentColor"><path d="M15 30V15h15m60 0h15v15M15 70v15h15m60 0h15V70" stroke-width="3"/><path d="M35 32v36m6-36v36m10-36v36m7-36v36m10-36v36m6-36v36m10-36v36" stroke-width="3"/><path class="orb-line" d="M20 50h80" stroke-width="2"/></svg></span>
+      <strong>¿Qué hay detrás<br>de tu producto?</strong><span>Escanear un código de barras <b>→</b></span>
+    </button>
+    <div class="home-side">
+      <div id="home-metrics" class="home-metrics"></div>
+      <div class="panel quick-compare"><span class="section-tag">ANTES DE ELEGIR</span><h2>Dos opciones.<br>Una mejor decisión.</h2><p>Revisa la evidencia de dos productos lado a lado.</p><button id="launch-compare" class="secondary">Abrir comparador ↗</button></div>
+    </div>
+  </div>
+  <div class="section-heading"><div><span class="section-tag">TU RECORRIDO</span><h2>Últimos descubrimientos</h2></div><button id="launch-history" class="link">Ver todo →</button></div>
+  <div id="recent-products" class="recent-products"></div>
+  <div class="home-tip"><span aria-hidden="true">✧</span><div><strong>La evidencia también tiene matices</strong><p>Una etiqueta ambiental y la reputación de una empresa aportan información de distinto alcance. Abre las fuentes de cada informe para conocerlo.</p></div></div>
+</section>
+<section id="scan" hidden>
+<div class="workspace">
+<div class="hero">
+  <div class="intro">
+    <div class="eyebrow"><i></i> OBSERVATORIO DE CONSUMO</div>
+    <h1>Pequeñas compras.<br><em>Grandes preguntas.</em></h1>
+    <p>Mira más allá de la etiqueta. Escanea un producto, explora sus datos y decide con más información.</p>
+    <div class="hero-radar" aria-hidden="true"><i></i><i></i><i></i><b>✳</b></div>
+<svg class="hero-botanical" viewBox="0 0 280 280" aria-hidden="true">
+  <path class="stem" d="M130 275Q148 152 228 26"/>
+  <path d="M151 213Q64 215 38 142Q119 132 151 213ZM173 159Q106 143 103 78Q168 91 173 159ZM200 108Q154 73 177 19Q219 49 200 108ZM157 192Q196 125 266 145Q238 212 157 192ZM184 133Q218 69 276 75Q260 137 184 133Z"/>
+</svg>
+<div class="hero-ticket"><div class="bars" aria-hidden="true"></div><span>01 / LEE EL CÓDIGO<br>02 / REVISA LA EVIDENCIA</span><b aria-hidden="true">↘</b></div>
+  </div>
+</div><section class="panel scanner"><div class="section-tag">01 / ESCÁNER</div><h2>Escanea un producto</h2><p>Usa la cámara, elige una foto o escribe el código.</p>
+<div class="viewfinder"><video id="video" playsinline muted hidden></video><div class="reticle" aria-hidden="true"><i></i><i></i><i></i><i></i><div class="bars"></div><div class="laser"></div></div><span id="camera-label">CÁMARA INACTIVA</span></div>
+<div class="capture-actions">
+  <button class="primary" id="camera" type="button">Activar cámara <span aria-hidden="true">↗</span></button>
+  <button class="secondary" id="photo-button" type="button">Leer foto</button>
+  <input id="photo" type="file" accept="image/*" hidden>
+</div>
+<form id="lookup"><label for="barcode">Código de barras</label><div class="input-row"><input id="barcode" inputmode="numeric" autocomplete="off" placeholder="Ej. 3017620422003" maxlength="22" required><button class="secondary">Analizar →</button></div></form>
+<div class="scanner-actions"><button type="button" class="link" id="try-real">Probar con Nutella ↗</button><span>EAN / UPC / GTIN</span></div><p class="message" id="status" role="status"></p>
+</section>
+<aside class="panel guide"><div class="section-tag">02 / LO QUE REVISAMOS</div><h2>Una mirada completa</h2><p>Comprende qué se sabe del producto y qué falta por comprobar.</p>
+<div class="feature"><span class="tile green" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 15C3 8 12 4 20 4c0 8-4 16-11 15a5 5 0 0 1-4-4Z"/><path d="m4 21 11-11"/></svg></span><div><h3>Impacto ambiental</h3><p>Green-Score y sellos registrados, si están disponibles.</p></div></div>
+<div class="feature"><span class="tile gold" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m12 3 9 16H3L12 3Z"/><path d="M12 9v4m0 2v1"/></svg></span><div><h3>Señales de greenwashing</h3><p>Identifica afirmaciones ambientales que necesitan evidencia adicional.</p></div></div>
+<div class="feature"><span class="tile blue" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 21V7l7-4 7 4v14M3 21h18M9 9h1m4 0h1m-6 4h1m4 0h1m-5 8v-4h4v4"/></svg></span><div><h3>Reputación de la marca</h3><p>Accede a búsquedas de fuentes independientes sobre la marca.</p></div></div>
+<div class="notice"><strong>¿Primera vez aquí?</strong><p>Explora un informe de ejemplo para ver cómo se presenta la evidencia.</p><button class="link" id="demo">Ver ejemplo interactivo →</button></div><details class="method"><summary>Cómo interpretar la evidencia</summary><p>El Green-Score es una estimación ambiental de la ficha del producto. Las etiquetas registradas permiten identificar sellos y afirmaciones por verificar. La ausencia de datos se muestra en cada informe. WWF aporta contexto sobre la compra de aceite de palma de Ferrero y Danone. Esa evaluación se aplica a cada empresa y se muestra por separado del Green-Score.</p><a href="https://palmoilscorecard.panda.org/buyers/methodology/" target="_blank" rel="noopener noreferrer">Metodología de WWF ↗</a></details></aside>
+</div>
+<section id="result" class="panel result" hidden aria-labelledby="result-title"></section>
+</section>
+<section id="history" hidden><div class="history-head"><div><div class="eyebrow"><i></i> TU ACTIVIDAD</div><h1>Historial</h1><p>Las consultas se guardan en este navegador.</p></div><button class="secondary" id="clear">Borrar historial</button></div><div class="panel"><label for="search">Buscar en el historial</label><input id="search" type="search" placeholder="Nombre, marca o código"><div class="history-tools"><div><label for="grade-filter">Calificación ambiental</label><select id="grade-filter"><option value="">Todas</option><option>A+</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option value="unknown">Sin Green-Score</option></select></div><label class="favorite-filter"><input id="only-favorites" type="checkbox"> Solo favoritos</label></div><p id="history-summary" role="status"></p><div id="history-list"></div></div></section>
+<section id="compare" hidden>
+  <div class="history-head"><div><div class="eyebrow"><i></i> DECISIONES DE COMPRA</div><h1>Comparar</h1><p>Revisa dos productos de tu historial lado a lado.</p></div></div>
+  <div class="panel">
+    <p id="compare-help" role="status"></p>
+    <div id="compare-controls" class="compare-grid">
+      <div><label for="compare-a">Primer producto</label><select id="compare-a"></select></div>
+      <div><label for="compare-b">Segundo producto</label><select id="compare-b"></select></div>
+    </div>
+    <div id="compare-result" class="compare-grid" aria-live="polite"></div>
+  </div>
+</section>
+<section id="activity" hidden>
+  <div class="history-head">
+    <div><div class="eyebrow"><i></i> TU ACTIVIDAD</div><h1>Huella de consulta</h1><p>Explora la evidencia disponible en los productos de tu historial.</p></div>
+    <button class="secondary" id="export-history" type="button">Descargar historial ↓</button>
+  </div>
+  <div class="activity-metrics" id="activity-metrics"></div>
+  <section class="panel activity-chart" aria-labelledby="distribution-title">
+    <div class="section-tag">DISTRIBUCIÓN</div>
+    <h2 id="distribution-title">Green-Score de tus consultas</h2>
+    <p>Cada producto cuenta una vez. El gráfico refleja las fichas guardadas en este navegador.</p>
+    <div id="grade-chart"></div>
+  </section>
+</section>
+</main>
+<footer class="shell"><span><strong>EcoLupa</strong> · Compra con más información.</span><span>Sin cuenta · Fotos y cámara procesadas en el dispositivo</span></footer>
+<template id="report"><div class="section-tag"></div><h2 id="result-title" tabindex="-1"></h2><p class="meta"></p><div class="report-grid"></div><div class="ai notice" hidden></div><div class="sources"></div></template>
+</body></html>
+
+
+
+
+
+
+
+
+
