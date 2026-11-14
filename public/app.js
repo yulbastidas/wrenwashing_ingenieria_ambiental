@@ -107,10 +107,19 @@ function showReport(r){
   addReportActions(r);
   $('#result-title').focus({preventScroll:true});result.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
 }
-async function analyze(raw){
+async function analyze(raw, forceRefresh = false){
   if(busy || readingPhoto)return;
   const code=raw.replace(/[\s-]/g,'');
   if(!validCode(code)){status('Ingresa un código EAN, UPC-A o GTIN válido, con 8, 12, 13 o 14 dígitos.');return;}
+  const savedReport = history.find(entry => entry.code === code);
+  if (!forceRefresh && savedReport?.research?.status === 'ready' && savedReport.aiStatus === 'ready' &&
+      Date.now() - Date.parse(savedReport.date) < 15 * 60 * 1000) {
+    stopCamera();
+    $('#barcode').value = code;
+    showReport(savedReport);
+    status('Mostrando tu análisis reciente con fuentes. Usa Actualizar ficha para volver a consultar.');
+    return;
+  }
   stopCamera();$('#barcode').value=code;busy=true;
   $('#result').hidden=true;$('#lookup button').disabled=true;$('#camera').disabled=true;$('#demo').disabled=true;
   $('#lookup').setAttribute('aria-busy','true');
@@ -410,7 +419,7 @@ function addReportActions(report) {
   if (stored) {
     const refresh = node('button', 'Actualizar ficha ↻', 'secondary');
     refresh.type = 'button';
-    refresh.onclick = () => analyze(stored.code);
+    refresh.onclick = () => analyze(stored.code, true);
     toolbar.append(refresh);
     const favorite = node('button', stored.favorite ? '★ En favoritos' : '☆ Guardar favorito', 'secondary');
     favorite.type = 'button';

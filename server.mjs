@@ -58,7 +58,10 @@ async function analyzeProduct(code) {
     if (!report) return {status:unavailable?503:404,body:{error:'No pudimos confirmar la identidad de este código en los catálogos ni en la búsqueda web.'}};
     report.research = research;
     const analysis = research.status === 'unavailable' && research.httpStatus === 429 ? {aiStatus:'unavailable',aiFailure:'quota'} : await summarize(report);
-    if (analysis.assessment && research.status === 'ready') analysis.assessment.scope = research.assessment?.scope || 'marca';
+    if (analysis.assessment && research.status === 'ready') {
+      analysis.assessment.scope = research.assessment?.scope || 'marca';
+      if (analysis.assessment.scope === 'marca') analysis.summary = 'Evaluación de afirmaciones de la marca; aplicación a esta variante no confirmada. '+analysis.summary;
+    }
     const result = {status:200,body:{...report,...analysis}};
     if (analysis.aiStatus === 'ready') {
       productCache.set(code,{created:Date.now(),result});
