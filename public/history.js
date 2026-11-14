@@ -38,6 +38,7 @@ export function normalizeHistory(value) {
     if (product.assessment && ['indicios','sin_indicios','insuficiente'].includes(product.assessment.conclusion)) {
       report.assessment = {
         conclusion: product.assessment.conclusion,
+        scope: product.assessment.scope === 'marca' ? 'marca' : 'producto',
         reasons: strings(product.assessment.reasons),
         missing: strings(product.assessment.missing)
       };

@@ -41,6 +41,34 @@ function findBrandContext(brands) {
 }
 const assets = {'/':['index.html','text/html'], '/style.css':['style.css','text/css'], '/app.js':['app.js','text/javascript'], '/evaluation.js':['evaluation.js','text/javascript'], '/history.js':['history.js','text/javascript']};
 const fields = 'product_name,product_name_es,brands,labels_tags,environmental_score_grade,ecoscore_grade';
+const productCache = new Map();
+const pendingProducts = new Map();
+
+async function analyzeProduct(code) {
+  const cached = productCache.get(code);
+  if (cached && Date.now() - cached.created < 15 * 60 * 1000) return cached.result;
+  if (pendingProducts.has(code)) return pendingProducts.get(code);
+  const pending = (async () => {
+    let {report,unavailable}=await lookup(code);
+    const research = await researchProduct(report || {code});
+    if (!report && research.identity) {
+      report = evaluate({product_name:research.identity.name,brands:research.identity.brand},code,research.sources[0]);
+      report.identitySource = 'web';
+    }
+    if (!report) return {status:unavailable?503:404,body:{error:'No pudimos confirmar la identidad de este código en los catálogos ni en la búsqueda web.'}};
+    report.research = research;
+    const analysis = research.assessment ? {aiStatus:'ready',aiProvider:'cloud',summary:research.summary,assessment:research.assessment} :
+      research.status === 'unavailable' && research.httpStatus === 429 ? {aiStatus:'unavailable',aiFailure:'quota'} : await summarize(report);
+    const result = {status:200,body:{...report,...analysis}};
+    if (analysis.aiStatus === 'ready') {
+      productCache.set(code,{created:Date.now(),result});
+      if (productCache.size > 40) productCache.delete(productCache.keys().next().value);
+    }
+    return result;
+  })();
+  pendingProducts.set(code,pending);
+  try { return await pending; } finally { pendingProducts.delete(code); }
+}
 
 export async function lookup(code, request = fetch) {
   const results = await Promise.all(catalogues.map(async source=>{
@@ -130,18 +158,8 @@ export async function handler(req,res) {
     if(url.pathname === '/api/product') {
       const code=url.searchParams.get('code') || '';
       if(!validCode(code)) return json(400,{error:'El código no es válido.'});
-      let {report,unavailable}=await lookup(code);
-      const research = await researchProduct(report || {code});
-      if (!report && research.status === 'ready') {
-        const identity = research.text.match(/IDENTIDAD:\s*([^|\n]+)\|([^\n]+)/i);
-        if (identity && !/NO CONFIRMADA/i.test(identity[1])) {
-          report = evaluate({product_name:identity[1].trim(),brands:identity[2].trim()},code,research.sources[0]);
-          report.identitySource = 'web';
-        }
-      }
-      if(!report) return unavailable ? json(503,{error:'No fue posible identificar el producto. Revisa la conexión y el código.'}) : json(404,{error:'No encontramos una identidad verificable para este código en los catálogos ni en la búsqueda web.'});
-      report.research = research;
-      return json(200,{...report,...await summarize(report)});
+      const result = await analyzeProduct(code);
+      return json(result.status,result.body);
     }
     const asset=Object.hasOwn(assets,url.pathname) && assets[url.pathname];
     if(!asset) return json(404,{error:'Página no encontrada'});

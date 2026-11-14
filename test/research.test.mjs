@@ -20,3 +20,16 @@ test('search failure keeps an explicit unavailable state', async()=>{
   assert.equal(result.httpStatus,429);
   assert.deepEqual(result.sources,[]);
 });
+
+test('cited search assessment retains scope and only confirmed product identities', async()=>{
+  const payload={nombre:'Producto',marca:'Marca',identidadConfirmada:true,resumen:'Afirmación contrastada con fuentes.',
+    conclusion:'sin_indicios',alcance:'marca',razones:['Fuente de la marca'],faltantes:[],investigacion:'Hechos limitados a la marca.',
+    fuentes:[{nombre:'Fuente',url:'https://example.com/report'}]};
+  const result=await researchProduct({code:'6281001112013'},async()=>Response.json({
+    choices:[{message:{content:JSON.stringify(payload)}}]
+  }),{AI_API_KEY:'test-key'});
+  assert.equal(result.assessment.scope,'marca');
+  assert.equal(result.assessment.conclusion,'sin_indicios');
+  assert.equal(result.identity.name,'Producto');
+  assert.equal(result.sources[0].url,'https://example.com/report');
+});

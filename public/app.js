@@ -68,6 +68,9 @@ function showReport(r){
     const verdict = node('section', '', 'ai-verdict');
     verdict.dataset.verdict = r.assessment.conclusion;
     verdict.append(node('div', 'EVALUACIÓN CON IA', 'section-tag'), node('h2', names[r.assessment.conclusion] || names.insuficiente));
+    if (r.assessment.scope) verdict.append(node('p', r.assessment.scope === 'marca' ?
+      'Alcance de la conclusión: afirmaciones ambientales de la marca. Consulta las fuentes para comprobar su relación con este producto.' :
+      'Alcance de la conclusión: afirmaciones del producto identificado.'));
     for (const [title, values] of [['Razones',r.assessment.reasons],['Qué falta comprobar',r.assessment.missing]]) {
       if (!values?.length) continue;
       verdict.append(node('h3',title));
