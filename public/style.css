@@ -392,3 +392,7 @@ footer {padding-top:30px}
 .ai-verdict h2 {font-size:25px}
 .ai-verdict h3 {margin-top:15px}
 .ai-verdict ul {padding-left:20px;font-size:13px;line-height:1.6;color:var(--muted)}
+
+.research-evidence {margin-top:18px;border-top:1px solid var(--line);padding-top:15px}
+.research-evidence summary {cursor:pointer;font-weight:700;font-size:13px}
+.research-evidence p {white-space:pre-wrap;overflow-wrap:anywhere;margin-top:12px;max-height:500px;overflow:auto}

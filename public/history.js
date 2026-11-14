@@ -42,6 +42,13 @@ export function normalizeHistory(value) {
         missing: strings(product.assessment.missing)
       };
     }
+    if (product.research && typeof product.research.text === 'string') {
+      report.research = {
+        status: product.research.status === 'ready' ? 'ready' : 'unavailable',
+        text: product.research.text.slice(0,14000),
+        sources: Array.isArray(product.research.sources) ? product.research.sources.map(safeLink).filter(item=>item?.url).slice(0,8) : []
+      };
+    }
     if (!unique.has(report.code)) unique.set(report.code, report);
   }
   if (products.length && !unique.size) throw new Error('El respaldo no contiene productos válidos.');

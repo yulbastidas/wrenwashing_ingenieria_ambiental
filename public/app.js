@@ -84,6 +84,15 @@ function showReport(r){
   if(r.context?.url) link('Declaración de '+r.context.company,r.context.url);
   if(r.context?.independentUrl) link('Evaluación WWF · 2026',r.context.independentUrl);
   if(r.brand && !r.demo) link('Buscar fuentes independientes','https://www.google.com/search?q='+encodeURIComponent('"'+(r.context?.company || r.brand.split(',')[0])+'" sostenibilidad sanciones ambientales investigación independiente'));
+  for (const source of r.research?.sources || []) link('Fuente web · '+source.name,source.url);
+  if (r.research?.status === 'ready') {
+    const research = document.createElement('details');
+    research.className = 'research-evidence';
+    research.append(node('summary','Ver investigación web y alcance de las fuentes'),node('p',r.research.text));
+    result.append(research);
+  } else {
+    result.append(node('p', 'La búsqueda web no aportó fuentes verificables en esta consulta. La evaluación usa la evidencia disponible del catálogo.', 'app-notice'));
+  }
   addReportActions(r);
   $('#result-title').focus({preventScroll:true});result.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
 }
@@ -94,7 +103,7 @@ async function analyze(raw){
   stopCamera();$('#barcode').value=code;busy=true;
   $('#result').hidden=true;$('#lookup button').disabled=true;$('#camera').disabled=true;$('#demo').disabled=true;
   $('#lookup').setAttribute('aria-busy','true');
-  status('Identificando el producto y evaluando su evidencia con IA. El modelo local puede tardar hasta 3 minutos en el primer análisis…');
+  status('Identificando el producto, buscando fuentes ambientales y preparando la evaluación con IA…');
   try{
     const res=await fetch('/api/product?code='+code,{signal:AbortSignal.timeout(205000)});
     const report=await res.json();
@@ -578,3 +587,4 @@ function showMissingProduct(code) {
   result.hidden = false;
   result.scrollIntoView({behavior:'smooth', block:'start'});
 }
+
