@@ -65,3 +65,10 @@ test('hosted default model requests strict assessments with a reasoning budget',
   }, {AI_API_KEY:'test-key'});
   assert.equal(result.aiStatus,'ready');
 });
+
+test('a high impact grade and uncited research cannot become a greenwashing finding', async()=>{
+  const result=await summarize({name:'Producto',grade:'F',claims:[],research:{status:'ready',text:'Impacto estimado alto.',sources:[{url:'https://example.com/impact'}]}},
+    async()=>Response.json({choices:[{message:{content:JSON.stringify({resumen:'Faltan datos.',conclusion:'indicios',razones:['Impacto alto'],faltantes:[]})}}]}),
+    {AI_API_KEY:'test-key'});
+  assert.equal(result.assessment.conclusion,'insuficiente');
+});

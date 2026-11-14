@@ -57,8 +57,8 @@ async function analyzeProduct(code) {
     }
     if (!report) return {status:unavailable?503:404,body:{error:'No pudimos confirmar la identidad de este código en los catálogos ni en la búsqueda web.'}};
     report.research = research;
-    const analysis = research.assessment ? {aiStatus:'ready',aiProvider:'cloud',summary:research.summary,assessment:research.assessment} :
-      research.status === 'unavailable' && research.httpStatus === 429 ? {aiStatus:'unavailable',aiFailure:'quota'} : await summarize(report);
+    const analysis = research.status === 'unavailable' && research.httpStatus === 429 ? {aiStatus:'unavailable',aiFailure:'quota'} : await summarize(report);
+    if (analysis.assessment && research.status === 'ready') analysis.assessment.scope = research.assessment?.scope || 'marca';
     const result = {status:200,body:{...report,...analysis}};
     if (analysis.aiStatus === 'ready') {
       productCache.set(code,{created:Date.now(),result});
@@ -97,6 +97,7 @@ export async function summarize(report, request = fetch, env = process.env) {
         {role:'user',content:'Analiza estos hechos y genera la evaluación solicitada. Hechos: '+JSON.stringify(facts)}
       ];
     messages[0].content += ' Si hay investigación web citada, analiza también sus afirmaciones ambientales y evidencia aunque el catálogo carezca de etiquetas. Sin_indicios se limita a las afirmaciones revisadas. Indicios exige una afirmación concreta y evidencia de contradicción o cuestionamiento, no basta que falten datos. Di explícitamente si la conclusión aplica al producto, a la marca o solo a una afirmación. Cita las fuentes por su dominio en las razones. No afirmes que un hecho sobre una empresa demuestra por sí solo engaño en este producto.';
+    messages[0].content += ' Actúa como revisor crítico de la investigación: puede contener errores o extrapolaciones. Un Green-Score D o F, la ausencia de certificaciones o no encontrar auditorías NO son contradicciones suficientes para acusar greenwashing. Para indicios debes devolver además afirmacion (promesa concreta), contradiccion (hecho documentado que la cuestiona, nunca mera falta de información) y fuenteContradiccion (URL exacta de una de las fuentes adjuntas). Para otros resultados devuelve esas tres claves como cadenas vacías. Sin_indicios es aplicable a una afirmación delimitada respaldada por los datos, como organicidad o reutilización, sin exigir certificaciones de temas ajenos. Mantén pendiente lo que no se pudo comprobar.';
     const endpoint = cloud ? new URL('chat/completions', (env.AI_BASE_URL || 'https://api.groq.com/openai/v1').replace(/\/$/, '') + '/') : new URL('http://127.0.0.1:11434/api/chat');
     if (cloud && endpoint.protocol !== 'https:') return {aiStatus:'unavailable'};
     const body = cloud
@@ -121,7 +122,8 @@ export async function summarize(report, request = fetch, env = process.env) {
             conclusion:{type:'string',enum:['indicios','sin_indicios','insuficiente']},
             razones:{type:'array',items:{type:'string'}},
             faltantes:{type:'array',items:{type:'string'}}
-          },required:['resumen','conclusion','razones','faltantes'],additionalProperties:false
+            ,afirmacion:{type:'string'},contradiccion:{type:'string'},fuenteContradiccion:{type:'string'}
+          },required:['resumen','conclusion','razones','faltantes','afirmacion','contradiccion','fuenteContradiccion'],additionalProperties:false
         }
       }};
     }
@@ -141,8 +143,12 @@ export async function summarize(report, request = fetch, env = process.env) {
     if (typeof analysis.resumen !== 'string' || !analysis.resumen.trim()) return {aiStatus:'unavailable'};
     const list = values => Array.isArray(values) ? values.filter(value => typeof value === 'string').slice(0,3).map(value => value.slice(0,350)) : [];
     const hasEvidence = report.claims?.length || report.research?.status === 'ready';
-    const conclusion = hasEvidence && ['indicios','sin_indicios','insuficiente'].includes(analysis.conclusion)
+    let conclusion = hasEvidence && ['indicios','sin_indicios','insuficiente'].includes(analysis.conclusion)
       ? analysis.conclusion : 'insuficiente';
+    const proofSource = report.research?.sources?.find(source=>source.url === analysis.fuenteContradiccion);
+    const documentedContradiction = typeof analysis.afirmacion === 'string' && analysis.afirmacion.length > 10 &&
+      typeof analysis.contradiccion === 'string' && analysis.contradiccion.length > 25 && proofSource;
+    if (conclusion === 'indicios' && !documentedContradiction) conclusion = 'insuficiente';
     return {aiStatus:'ready',aiProvider:cloud?'cloud':'local',summary:analysis.resumen.trim().slice(0,1200),
       assessment:{conclusion,reasons:list(analysis.razones),missing:list(analysis.faltantes)}};
   } catch { return {aiStatus:'unavailable'}; }
