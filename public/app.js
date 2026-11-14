@@ -48,6 +48,13 @@ function showReport(r){
     ['Posible greenwashing',labels.length?'Afirmaciones por verificar':'Sin evidencia suficiente',labels.length?'El catálogo registra: '+labels.join(', ')+'. Revisa qué respalda cada afirmación; esto no demuestra engaño.':'La ficha no aporta afirmaciones ambientales suficientes para evaluar si son engañosas.'],
     ['Reputación empresarial',r.context?r.context.company+' · evidencia parcial':'Sin verificación',r.context?r.context.description:'El código no acredita la reputación de la empresa. Busca evaluaciones independientes y verifica la fecha y el alcance.']
   ];
+  if (r.assessment && r.research?.status === 'ready') {
+    const titles = {indicios:'Indicios documentados',sin_indicios:'Sin indicios en lo revisado',insuficiente:'Pendiente de evidencia concluyente'};
+    cards[1][1] = titles[r.assessment.conclusion];
+    cards[1][2] = (r.assessment.reasons || [])[0] || r.summary;
+    cards[2][1] = 'Investigación web disponible';
+    cards[2][2] = 'La evaluación reúne fuentes del fabricante y otras páginas encontradas. Abre cada enlace y revisa el alcance, la fecha y el mercado de sus afirmaciones.';
+  }
   if(seals.length) cards[0][2]+=' Sellos registrados: '+seals.join(', ')+'. Confirma su vigencia con la entidad certificadora.';
   for(const [title,value,description] of cards){
     const card=node('article','','report-card');card.append(node('h3',title),node('strong',value),node('p',description));$('.report-grid').append(card);
@@ -65,6 +72,7 @@ function showReport(r){
   const ai=$('.ai');ai.hidden=false;
   if (r.assessment) {
     const names = {indicios:'Indicios de greenwashing',sin_indicios:'Sin indicios en la evidencia revisada',insuficiente:'Evidencia insuficiente para concluir'};
+    if (r.assessment.scope === 'marca' && r.assessment.conclusion === 'indicios') names.indicios = 'Indicios en afirmaciones de la marca';
     const verdict = node('section', '', 'ai-verdict');
     verdict.dataset.verdict = r.assessment.conclusion;
     verdict.append(node('div', 'EVALUACIÓN CON IA', 'section-tag'), node('h2', names[r.assessment.conclusion] || names.insuficiente));
