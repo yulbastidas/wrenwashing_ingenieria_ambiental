@@ -89,7 +89,7 @@ function showReport(r){
     result.insertBefore(verdict, result.querySelector('.report-grid'));
   }
   ai.append(node('strong',r.demo?'Cómo leer este informe':r.summary?'Resumen generado por IA':'Resumen con datos del catálogo'));
-  ai.append(node('p',r.demo?'Un Green-Score B aporta contexto sobre el impacto estimado. La afirmación «biodegradable» requiere evidencia específica, como condiciones y plazo de degradación.':r.summary|| (r.aiStatus==='unavailable'?'El resumen de IA no está disponible. Consulta la evidencia y sus fuentes.':'Revisa la ficha original, la fecha de consulta y el alcance de cada sello para tomar una decisión informada.')));
+  ai.append(node('p',r.demo?'Un Green-Score B aporta contexto sobre el impacto estimado. La afirmación «biodegradable» requiere evidencia específica, como condiciones y plazo de degradación.':r.summary|| (r.aiFailure==='quota'?'Groq alcanzó su límite de consultas. Espera antes de actualizar esta ficha; las fuentes y los datos ya encontrados permanecen disponibles.':r.aiStatus==='unavailable'?'El resumen de IA no está disponible. Consulta la evidencia y sus fuentes.':'Revisa la ficha original, la fecha de consulta y el alcance de cada sello para tomar una decisión informada.')));
   if(r.source) link(r.source.name,r.source.url);
   if(r.grade && r.source?.name==='Open Food Facts') link('Cómo se calcula el Green-Score','https://blog.openfoodfacts.org/en/EN-Pro-Platform-User-Guide.pdf');
   if(r.context?.url) link('Declaración de '+r.context.company,r.context.url);
