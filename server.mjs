@@ -80,6 +80,20 @@ export async function summarize(report, request = fetch, env = process.env) {
           },
           required:['resumen','conclusion','razones','faltantes'],additionalProperties:false
         }, options:{temperature:0,num_predict:700,num_ctx:4096}};
+    if (cloud && model.startsWith('openai/gpt-oss-')) {
+      body.max_completion_tokens = 2000;
+      body.reasoning_effort = 'low';
+      body.response_format = {type:'json_schema',json_schema:{
+        name:'environmental_assessment',strict:true,schema:{
+          type:'object',properties:{
+            resumen:{type:'string'},
+            conclusion:{type:'string',enum:['indicios','sin_indicios','insuficiente']},
+            razones:{type:'array',items:{type:'string'}},
+            faltantes:{type:'array',items:{type:'string'}}
+          },required:['resumen','conclusion','razones','faltantes'],additionalProperties:false
+        }
+      }};
+    }
     const headers = {'Content-Type':'application/json'};
     if (cloud) headers.Authorization = 'Bearer ' + env.AI_API_KEY;
     const r = await request(endpoint,{

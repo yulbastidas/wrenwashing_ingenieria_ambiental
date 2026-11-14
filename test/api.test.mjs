@@ -50,3 +50,18 @@ test('local assessment uses the selected model and avoids unsupported verdicts',
   assert.equal(result.assessment.conclusion,'insuficiente');
   assert.deepEqual(result.assessment.missing,['Etiqueta ambiental']);
 });
+
+test('hosted default model requests strict assessments with a reasoning budget', async () => {
+  const result = await summarize({name:'Producto',claims:[]}, async (_url, options) => {
+    const body = JSON.parse(options.body);
+    assert.equal(body.model,'openai/gpt-oss-20b');
+    assert.equal(body.response_format.type,'json_schema');
+    assert.equal(body.response_format.json_schema.strict,true);
+    assert.equal(body.reasoning_effort,'low');
+    assert.ok(body.max_completion_tokens >= 1500);
+    return Response.json({choices:[{message:{content:JSON.stringify({
+      resumen:'Datos insuficientes.',conclusion:'insuficiente',razones:[],faltantes:[]
+    })}}]});
+  }, {AI_API_KEY:'test-key'});
+  assert.equal(result.aiStatus,'ready');
+});
