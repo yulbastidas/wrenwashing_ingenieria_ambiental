@@ -125,7 +125,7 @@ async function analyze(raw, forceRefresh = false){
   $('#lookup').setAttribute('aria-busy','true');
   status('Identificando el producto, buscando fuentes ambientales y preparando la evaluación con IA…');
   try{
-    const res=await fetch('/api/product?code='+code,{signal:AbortSignal.timeout(205000)});
+    const res=await fetch('/api/product?code='+code+(forceRefresh?'&refresh=1':''),{signal:AbortSignal.timeout(205000)});
     const report=await res.json();
     if(!res.ok){
       const cached = history.find(entry => entry.code === code);

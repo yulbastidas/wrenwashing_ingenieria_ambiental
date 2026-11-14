@@ -5,7 +5,7 @@ function publicLinks(response) {
   for (const match of matches) {
     try {
       const url = new URL(match.replace(/[),.;\]]+$/, ''));
-      if (!url.hostname.includes('.') || /^(localhost|127\.|10\.|192\.168\.)/.test(url.hostname) || url.hostname === 'exa.ai') continue;
+      if (!url.hostname.includes('.') || /^(localhost|127\.|10\.|192\.168\.)/.test(url.hostname) || ['exa.ai','r.jina.ai','news.google.com'].includes(url.hostname) || url.pathname === '/') continue;
       links.set(url.href, {name:url.hostname.replace(/^www\./,''),url:url.href});
     } catch { /* Malformed citations are not displayed. */ }
   }
@@ -39,7 +39,8 @@ export async function researchProduct(product, request = fetch, env = process.en
       if (result.status === 'ready' && typeof analysis.resumen === 'string' &&
           ['indicios','sin_indicios','insuficiente'].includes(analysis.conclusion) &&
           ['producto','marca'].includes(analysis.alcance)) {
-        const scope = product.claims?.length || product.seals?.length ? analysis.alcance : 'marca';
+        const hasProductClaim = product.claims?.length || product.seals?.length || /reusab|reutiliz|organic|orgánic|recicl|recycl/i.test(product.name || '');
+        const scope = hasProductClaim && analysis.identidadConfirmada === true ? analysis.alcance : 'marca';
         result.assessment = {conclusion:analysis.conclusion,scope,
           reasons:list(analysis.razones),missing:list(analysis.faltantes)};
         result.summary = (scope === 'marca' ? 'Hallazgos sobre afirmaciones de la marca; no se confirmó su aplicación a esta variante y mercado. ' : '')+analysis.resumen.slice(0,1250);
