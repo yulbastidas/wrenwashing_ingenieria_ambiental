@@ -59,4 +59,5 @@ La IA local analiza los datos suministrados y no navega por internet. El desplie
 
 ## Proveedor elegido para Vercel
 
-Se preparó Groq con el modelo llama-3.3-70b-versatile. Crea una clave en https://console.groq.com/keys y agrégala como AI_API_KEY en las variables de entorno del proyecto de Vercel. AI_MODEL y AI_BASE_URL son opcionales con este proveedor porque el servidor ya incluye sus valores predeterminados. Después, vuelve a desplegar. Comprueba que /api/health muestra aiMode igual a cloud y realiza una consulta para verificar la respuesta del proveedor. La clave debe permanecer en el servidor.
+Se preparó Groq con el modelo openai/gpt-oss-20b. Crea una clave en https://console.groq.com/keys y agrégala como AI_API_KEY en las variables de entorno del proyecto de Vercel. AI_MODEL y AI_BASE_URL son opcionales con este proveedor porque el servidor ya incluye sus valores predeterminados. Después, vuelve a desplegar. Comprueba que /api/health muestra aiMode igual a cloud y realiza una consulta para verificar la respuesta del proveedor. La clave debe permanecer en el servidor.
+

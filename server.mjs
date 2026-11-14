@@ -58,7 +58,7 @@ export async function lookup(code, request = fetch) {
 }
 export async function summarize(report, request = fetch, env = process.env) {
   const cloud = Boolean(env.AI_API_KEY);
-  const model = cloud ? (env.AI_MODEL || 'llama-3.3-70b-versatile') : env.OLLAMA_MODEL;
+  const model = cloud ? (env.AI_MODEL || 'openai/gpt-oss-20b') : env.OLLAMA_MODEL;
   if (!model) return {aiStatus:'disabled'};
   try {
     const facts = {nombre:report.name,marca:report.brand,greenScore:report.grade,etiquetas:report.claims,sellosRegistrados:report.seals,contexto:report.context?.description};
@@ -126,5 +126,6 @@ export async function handler(req,res) {
 const server = http.createServer(handler);
 const port=Number(process.env.PORT || 3000);
 if(import.meta.main) server.listen(port,'127.0.0.1',()=>console.log('EcoLupa: http://localhost:'+server.address().port));
+
 
 
