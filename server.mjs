@@ -86,7 +86,11 @@ export async function summarize(report, request = fetch, env = process.env) {
       method:'POST', signal:AbortSignal.timeout(cloud ? 22000 : 180000), headers,
       body:JSON.stringify(body)
     });
-    if(!r.ok) return {aiStatus:'unavailable'};
+    if(!r.ok) {
+      const aiFailure = r.status === 401 ? 'credentials' : r.status === 429 ? 'quota' :
+        [403,404].includes(r.status) ? 'model_access' : 'provider';
+      return {aiStatus:'unavailable',aiFailure,aiHttpStatus:r.status};
+    }
     const response = await r.json();
     const analysis = JSON.parse(cloud ? response.choices?.[0]?.message?.content : response.message?.content);
     if (typeof analysis.resumen !== 'string' || !analysis.resumen.trim()) return {aiStatus:'unavailable'};

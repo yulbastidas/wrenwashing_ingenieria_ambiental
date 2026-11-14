@@ -33,7 +33,7 @@ test('provider outages preserve the evidence report fallback', async () => {
   const result = await summarize({name:'Producto'}, async () => new Response(null, {status:429}), {
     AI_API_KEY:'test-key', AI_MODEL:'test-model'
   });
-  assert.deepEqual(result, {aiStatus:'unavailable'});
+  assert.deepEqual(result, {aiStatus:'unavailable',aiFailure:'quota',aiHttpStatus:429});
 });
 
 test('local assessment uses the selected model and avoids unsupported verdicts', async () => {
