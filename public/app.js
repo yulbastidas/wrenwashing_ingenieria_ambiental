@@ -11,6 +11,7 @@ const status=message=>{$('#status').textContent=message;};
 const node=(tag,content,cls)=>{const el=document.createElement(tag);el.textContent=content;if(cls)el.className=cls;return el;};
 const formatDate=value=>{const d=new Date(value);return Number.isNaN(+d)?'':d.toLocaleString('es-CO',{dateStyle:'medium',timeStyle:'short'});};
 const cleanLabel=value=>value.replace(/^[a-z]{2}:/,'').replaceAll('-',' ');
+const displayCode=report=>report.code?.startsWith('manual:')?'Nombre y marca aportados por ti':report.code;
 function stopCamera(){
   ++cameraToken;clearTimeout(timer);controls?.stop();controls=null;
   stream?.getTracks().forEach(t=>t.stop());stream=null;
@@ -43,7 +44,8 @@ function showReport(r){
   const result=$('#result');result.replaceChildren($('#report').content.cloneNode(true));result.hidden=false;
   result.querySelector('.section-tag').textContent=r.demo?'EJEMPLO FICTICIO':'03 / INFORME DEL PRODUCTO';
   $('#result-title').textContent=r.name;
-  $('.meta').textContent=[r.brand,r.code,r.demo?'No se guarda en el historial':formatDate(r.date)].filter(Boolean).join(' · ');
+  $('.meta').textContent=[r.brand,displayCode(r),r.demo?'No se guarda en el historial':formatDate(r.date)].filter(Boolean).join(' · ');
+  if (r.identitySource==='user') result.append(node('p','Identificación aportada por ti. Este análisis no confirma que un código de barras corresponda al producto ni verifica su variante física.','app-notice'));
   const labels=(r.claims||[]).map(cleanLabel),seals=(r.seals||[]).map(cleanLabel);
   const cards=[
     ['Impacto ambiental',r.grade?'Green-Score '+r.grade:'Sin clasificación',r.grade?(['A+','A','B'].includes(r.grade)?'Impacto estimado relativamente bajo según esta escala.':r.grade==='C'?'Impacto estimado intermedio según esta escala.':'Impacto estimado relativamente alto según esta escala.')+' No es una certificación del producto.':'No hay datos suficientes para clasificarlo como ecológico.'],
@@ -111,10 +113,15 @@ function showReport(r){
   officeButton.type='button';officeButton.onclick=()=>{office.prefill(r.name);page('office');};result.append(officeButton);
   $('#result-title').focus({preventScroll:true});result.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
 }
-async function analyze(raw, forceRefresh = false){
+async function analyze(raw, forceRefresh = false, supplied = null){
   if(busy || readingPhoto)return;
   const code=raw.replace(/[\s-]/g,'');
-  if(!validCode(code)){status('Ingresa un código EAN, UPC-A o GTIN válido, con 8, 12, 13 o 14 dígitos.');return;}
+  const previous=history.find(entry=>entry.code===code);
+  if (code.startsWith('manual:') && previous) supplied={name:previous.name,brand:previous.brand};
+  if(!supplied && !validCode(code)){
+    status(/^\d+$/.test(code)?`El número tiene ${code.length} dígitos${[8,12,13,14].includes(code.length)?' pero su dígito de control no coincide':'; se aceptan 8, 12, 13 o 14'}. No se ha buscado otro código. Puedes continuar con el nombre y la marca.`:'Escribe solo el número bajo las barras, o continúa con nombre y marca.');
+    $('#manual-identification').open=true;return;
+  }
   const savedReport = history.find(entry => entry.code === code);
   if (!forceRefresh && savedReport?.research?.status === 'ready' && savedReport.aiStatus === 'ready' &&
       Date.now() - Date.parse(savedReport.date) < 15 * 60 * 1000) {
@@ -124,12 +131,14 @@ async function analyze(raw, forceRefresh = false){
     status('Mostrando tu análisis reciente con fuentes. Usa Actualizar ficha para volver a consultar.');
     return;
   }
-  stopCamera();$('#barcode').value=code;busy=true;
+  stopCamera();if(!supplied) $('#barcode').value=code;busy=true;
   $('#result').hidden=true;$('#lookup button').disabled=true;$('#camera').disabled=true;$('#demo').disabled=true;
   $('#lookup').setAttribute('aria-busy','true');
   status('Identificando el producto, buscando fuentes ambientales y preparando la evaluación con IA…');
   try{
-    const res=await fetch('/api/product?code='+code+(forceRefresh?'&refresh=1':''),{signal:AbortSignal.timeout(205000)});
+    const params=new URLSearchParams(supplied?supplied:{code});if(forceRefresh) params.set('refresh','1');
+    $('#manual-submit').disabled=true;
+    const res=await fetch('/api/product?'+params,{signal:AbortSignal.timeout(95000)});
     const report=await res.json();
     if(!res.ok){
       const cached = history.find(entry => entry.code === code);
@@ -141,13 +150,13 @@ async function analyze(raw, forceRefresh = false){
         status('Mostrando la última consulta guardada.');
       } else {
         status(report.error);
-        if (res.status === 404) showMissingProduct(code);
+        if (report.canIdentifyManually) {$('#manual-identification').open=true;showMissingProduct(code,report.error);}
       }
       return;
     }
-    report.favorite = history.find(entry=>entry.code===code)?.favorite === true;
-    report.notes = history.find(entry=>entry.code===code)?.notes || '';
-    history=[report,...history.filter(r=>r.code!==code)].slice(0,100);
+    report.favorite = history.find(entry=>entry.code===report.code)?.favorite === true;
+    report.notes = history.find(entry=>entry.code===report.code)?.notes || '';
+    history=[report,...history.filter(r=>r.code!==report.code)].slice(0,100);
     const saved=save();
     status(saved?'Consulta guardada en tu historial.':'El navegador no permitió guardar la consulta.');
     if (!$('#scan').hidden) showReport(report);
@@ -156,7 +165,7 @@ async function analyze(raw, forceRefresh = false){
     else if (!$('#activity').hidden) renderActivity();
     else renderHome();
   }catch{status('No pudimos completar la consulta. Comprueba la conexión e inténtalo de nuevo.');}
-  finally{busy=false;$('#lookup').removeAttribute('aria-busy');$('#lookup button').disabled=false;$('#camera').disabled=false;$('#demo').disabled=false;}
+  finally{busy=false;$('#manual-submit').disabled=false;$('#lookup').removeAttribute('aria-busy');$('#lookup button').disabled=false;$('#camera').disabled=false;$('#demo').disabled=false;}
 }
 async function startCamera(){
   if (busy || readingPhoto) return;
@@ -224,7 +233,7 @@ function renderHistory(){
   if(!filtered.length){list.append(node('p',history.length?'No hay consultas que coincidan.':'Todavía no tienes consultas. Escanea un producto para empezar.','empty'));return;}
   for(const report of filtered){
     const row=node('div','','history-row');
-    const open=node('button','');open.append(node('strong',report.name),node('small',[report.brand,report.code,formatDate(report.date)].filter(Boolean).join(' · ')));
+    const open=node('button','');open.append(node('strong',report.name),node('small',[report.brand,displayCode(report),formatDate(report.date)].filter(Boolean).join(' · ')));
     open.onclick=()=>{page('scan');showReport(report);};
     const remove=node('button','Quitar','secondary');remove.setAttribute('aria-label','Quitar '+report.name);remove.onclick=()=>{history=history.filter(x=>x.code!==report.code);save();renderHistory();};
     const favorite = node('button', report.favorite ? '★' : '☆', 'secondary favorite');
@@ -246,6 +255,7 @@ function renderHistory(){
 }
 $('#camera').onclick=startCamera;
 $('#lookup').onsubmit=e=>{e.preventDefault();analyze($('#barcode').value);};
+$('#manual-product').onsubmit=e=>{e.preventDefault();analyze('',false,{name:$('#manual-name').value.trim(),brand:$('#manual-brand').value.trim()});};
 $('#demo').onclick=()=>{stopCamera();status('');showReport(demo);};
 $('#search').oninput=renderHistory;
 $('#clear').onclick=()=>{if(confirm('¿Borrar todas las consultas guardadas en este navegador?')){history=[];save();renderHistory();}};
@@ -313,7 +323,7 @@ function renderComparison() {
     const selected = select.value;
     const placeholder = new Option('Elige un producto', '');
     select.replaceChildren(placeholder, ...history.map(report => {
-      const label = [report.favorite ? '★ ' + report.name : report.name, report.code].join(' · ');
+      const label = [report.favorite ? '★ ' + report.name : report.name, displayCode(report)].join(' · ');
       return new Option(label, report.code);
     }));
     if (history.some(report => report.code === selected)) select.value = selected;
@@ -343,7 +353,7 @@ function updateComparison() {
     card.append(
       node('div', report.grade ? 'Green-Score ' + report.grade : 'Sin Green-Score', 'compare-grade'),
       node('h2', report.name),
-      node('p', [report.brand, report.code].filter(Boolean).join(' · ')),
+      node('p', [report.brand, displayCode(report)].filter(Boolean).join(' · ')),
       node('strong', 'Sellos registrados'),
       node('p', report.seals?.length ? report.seals.map(cleanLabel).join(', ') : 'Sin sellos en la ficha'),
       node('strong', 'Afirmaciones por verificar'),
@@ -592,11 +602,12 @@ csvButton.onclick = () => {
 };
 
 
-function showMissingProduct(code) {
+function showMissingProduct(code,message) {
   const result = $('#result');
   result.replaceChildren(node('div', 'CÓDIGO ' + code, 'section-tag'),
     node('h2', 'Producto pendiente de identificar'),
-    node('p', 'Este código no aparece en los catálogos consultados. Busca el nombre y la marca en el envase para contrastar sus afirmaciones ambientales.'));
+    node('p', message || 'Escribe el nombre y la marca del envase para investigar sus afirmaciones ambientales.'));
+  const continueButton=node('button','Continuar con nombre y marca','primary');continueButton.type='button';continueButton.onclick=()=>{$('#manual-identification').open=true;$('#manual-name').focus();};result.append(continueButton);
   const sources = node('div', '', 'sources');
   result.append(sources);
   for (const [name, url] of [
@@ -613,4 +624,3 @@ function showMissingProduct(code) {
   result.hidden = false;
   result.scrollIntoView({behavior:'smooth', block:'start'});
 }
-

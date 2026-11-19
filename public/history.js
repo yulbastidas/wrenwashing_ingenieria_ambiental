@@ -6,7 +6,7 @@ export function normalizeHistory(value) {
   if (!Array.isArray(products)) throw new Error('El archivo no es un respaldo de EcoLupa.');
   const unique = new Map();
   for (const product of products) {
-    if (!product || typeof product.code !== 'string' || !validCode(product.code) ||
+    if (!product || typeof product.code !== 'string' || !(validCode(product.code) || /^manual:[a-f0-9]{16}$/.test(product.code)) ||
         typeof product.name !== 'string' || !product.name.trim()) continue;
     const strings = items => Array.isArray(items) ? items.filter(item => typeof item === 'string').slice(0, 20) : [];
     const safeLink = source => {
@@ -25,6 +25,7 @@ export function normalizeHistory(value) {
     };
     const report = {
       code: product.code, name: product.name.slice(0, 300),
+      identitySource: product.code.startsWith('manual:') ? 'user' : product.identitySource==='web'?'web':'catalogue',
       brand: typeof product.brand === 'string' ? product.brand.slice(0, 300) : '',
       grade: /^(A\+|[A-F])$/.test(product.grade) ? product.grade : null,
       claims: strings(product.claims), seals: strings(product.seals),

@@ -415,3 +415,4 @@ footer {padding-top:30px}
 nav button[data-page=office]::before {content:'♻'}
 @media (max-width:900px) {.office-grid {grid-template-columns:1fr}.office-banner {align-items:flex-start;flex-direction:column}}
 @media (max-width:700px) {nav {grid-template-columns:repeat(6,minmax(0,1fr))!important}.office-journey,.office-record-form {grid-template-columns:1fr}.office-banner {padding:22px}.office-journey article {padding:18px}#office .section-heading {flex-wrap:wrap;gap:14px}#office .activity-metrics {grid-template-columns:1fr}.office-record-form button {grid-column:auto}}
+.manual-identification {border-top:1px solid var(--line);margin-top:18px;padding-top:18px}.manual-identification summary {font-weight:700;cursor:pointer;font-size:16px}.manual-identification p {margin:14px 0}.manual-identification label {margin-top:16px}.manual-identification input {width:100%;font-size:16px}.manual-identification button {margin-top:18px;width:100%}

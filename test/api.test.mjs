@@ -15,6 +15,21 @@ test('Vercel adapter rejects invalid codes before any catalogue request', async 
   assert.equal(typeof payload.error, 'string');
 });
 
+test('manual product research remains explicitly user supplied and keeps a distinct history identifier',async()=>{
+  const oldFetch=globalThis.fetch,oldKey=process.env.AI_API_KEY,oldModel=process.env.OLLAMA_MODEL;
+  delete process.env.AI_API_KEY;process.env.OLLAMA_MODEL='test-local';
+  globalThis.fetch=async()=>Response.json({message:{content:JSON.stringify({resumen:'No hay una promesa comprobada.',conclusion:'insuficiente',razones:[],faltantes:[]})}});
+  let status,payload;
+  try {
+    await productHandler({method:'GET',url:'/api/product?name=Pasta+dental+variante+de+prueba&brand=Marca+de+prueba'}, {writeHead(code){status=code;},end(body){payload=JSON.parse(body);}});
+    assert.equal(status,200);assert.equal(payload.identitySource,'user');assert.match(payload.code,/^manual:[a-f0-9]{16}$/);assert.equal(payload.source,null);
+  } finally {
+    globalThis.fetch=oldFetch;
+    if(oldKey===undefined) delete process.env.AI_API_KEY;else process.env.AI_API_KEY=oldKey;
+    if(oldModel===undefined) delete process.env.OLLAMA_MODEL;else process.env.OLLAMA_MODEL=oldModel;
+  }
+});
+
 test('cloud summary keeps credentials server-side and parses provider response', async () => {
   const result = await summarize({name:'Producto', claims:[], seals:[]}, async (url, options) => {
     assert.equal(String(url), 'https://api.groq.com/openai/v1/chat/completions');

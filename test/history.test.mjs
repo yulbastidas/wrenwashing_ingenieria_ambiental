@@ -2,6 +2,12 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { normalizeHistory } from '../public/history.js';
 
+test('manual research retains its unverified identity marker through a history restore',()=>{
+  const r=normalizeHistory([{code:'manual:0123456789abcdef',name:'Producto descrito',brand:'Marca'}])[0];
+  assert.equal(r.identitySource,'user');assert.equal(r.code,'manual:0123456789abcdef');
+  assert.throws(()=>normalizeHistory([{code:'manual:invalid',name:'Producto'}]));
+});
+
 test('restores legacy products and rejects unsafe links and malformed fields', () => {
   const products = normalizeHistory([
     { code: '3017620422003', name: 'Nutella', claims: [null, 'en:organic'],

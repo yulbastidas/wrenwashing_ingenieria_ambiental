@@ -1,13 +1,22 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {validCode} from '../public/evaluation.js';
-import {lookup} from '../server.mjs';
+import {lookup,supplementalLookup} from '../server.mjs';
 
 test('validates GTIN check digits while keeping leading zeros',()=>{
   assert.equal(validCode('3017620422003'),true);
   assert.equal(validCode('0036000291452'),true);
   assert.equal(validCode('3017620422004'),false);
   assert.equal(validCode('12345'),false);
+  assert.equal(validCode('00570179862954102'),false);
+});
+
+test('supplemental catalogue requires an exact equivalent GTIN and never invents environmental fields',async()=>{
+  const code='6281001112013';
+  assert.equal(await supplementalLookup(code,async()=>Response.json({items:[{ean:'8710522417379',title:'Another product'}]})),null);
+  const report=await supplementalLookup(code,async()=>Response.json({items:[{ean:code,title:'Colgate Original',brand:'Colgate'}]}));
+  assert.equal(report.name,'Colgate Original');assert.equal(report.grade,null);assert.deepEqual(report.claims,[]);
+  assert.equal(report.source.name,'UPCitemdb · identificación comercial');
 });
 test('maps a real catalogue response to evidence without inventing a grade',async()=>{
   const {report}=await lookup('3017620422003',async url=>url.includes('openfoodfacts')
