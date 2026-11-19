@@ -416,3 +416,75 @@ nav button[data-page=office]::before {content:'♻'}
 @media (max-width:900px) {.office-grid {grid-template-columns:1fr}.office-banner {align-items:flex-start;flex-direction:column}}
 @media (max-width:700px) {nav {grid-template-columns:repeat(6,minmax(0,1fr))!important}.office-journey,.office-record-form {grid-template-columns:1fr}.office-banner {padding:22px}.office-journey article {padding:18px}#office .section-heading {flex-wrap:wrap;gap:14px}#office .activity-metrics {grid-template-columns:1fr}.office-record-form button {grid-column:auto}}
 .manual-identification {border-top:1px solid var(--line);margin-top:18px;padding-top:18px}.manual-identification summary {font-weight:700;cursor:pointer;font-size:16px}.manual-identification p {margin:14px 0}.manual-identification label {margin-top:16px}.manual-identification input {width:100%;font-size:16px}.manual-identification button {margin-top:18px;width:100%}
+
+/* Responsive containment: content must size the card, never force the viewport wider. */
+main.shell, main>section, .office-banner>div, .home-side,
+.office-grid>*, .office-record-form>*, .office-journey>*,
+.dashboard-heading>div, .history-head>div, .section-heading>div {min-width:0}
+.office-banner {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:clamp(18px,3vw,36px);align-items:center}
+.office-banner .section-tag {display:block;max-width:none;line-height:1.5}
+.office-banner h2 {font-size:clamp(25px,2.4vw,36px);line-height:1.16;max-width:26ch}
+.office-banner p {max-width:65ch;overflow-wrap:break-word}
+.office-banner>.primary {width:auto;max-width:100%;min-width:0;justify-content:center;white-space:normal;text-align:center}
+.office-grid {grid-template-columns:repeat(2,minmax(0,1fr))}
+.office-record-form {grid-template-columns:repeat(2,minmax(0,1fr))}
+.sources a {max-width:100%;overflow-wrap:anywhere}
+.result>h2,.ai-verdict h2,.meta,.office-scope,.waste-record strong {overflow-wrap:anywhere}
+.report-toolbar .secondary,.backup-tools button {white-space:normal;max-width:100%}
+.input-row {display:grid;grid-template-columns:minmax(0,1fr) auto}
+.input-row button {white-space:normal}
+.history-tools>div {max-width:100%}
+.top.shell {overflow-y:auto;overflow-x:hidden}
+@media (max-width:1100px) {
+  .office-banner {grid-template-columns:minmax(0,1fr);gap:20px}
+  .office-banner>.primary {justify-self:start;width:auto}
+}
+@media (max-width:900px) {
+  .office-grid {grid-template-columns:minmax(0,1fr)}
+  .office-journey {grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:760px) {
+  body {padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+  .top.shell {overflow:visible}
+  nav {grid-template-columns:repeat(6,minmax(0,1fr))!important;padding-inline:6px}
+  nav button {min-width:0;min-height:64px;font-size:10px;line-height:1.25;overflow-wrap:normal;white-space:normal}
+  nav button::before {font-size:21px}
+  .office-banner {padding:24px;gap:20px}
+  .office-banner h2 {max-width:none}
+  .office-banner>.primary {width:100%;min-height:48px}
+  .app-location {min-width:0;line-height:1.4}
+  .dashboard-heading {gap:16px}
+  .dashboard-mark {flex-shrink:0}
+  .office-record-form {grid-template-columns:minmax(0,1fr)}
+  .section-heading,.history-head {flex-wrap:wrap;align-items:flex-start}
+  .history-head {gap:18px}
+  .office-record-form button {grid-column:auto}
+}
+@media (max-width:540px) {
+  .office-banner {padding:20px;border-radius:18px}
+  .office-banner h2 {font-size:28px}
+  .office-banner p {font-size:15px}
+  .office-banner>.primary {font-size:14px}
+  .activity-metrics {grid-template-columns:minmax(0,1fr)}
+  .activity-metric {padding:20px}
+  .activity-metric h2 {font-size:14px}
+  .activity-metric strong {font-size:42px}
+  .history-row {flex-wrap:wrap}
+  .history-row>button:first-child {flex:1 0 100%}
+  .input-row {grid-template-columns:minmax(0,1fr)}
+  .input-row button {width:100%;min-height:46px}
+  .report-toolbar>* {flex:1 1 180px}
+  .result>h2 {font-size:28px}
+  .ai-verdict {padding:18px}
+  .ai-verdict h2 {font-size:23px}
+  .waste-record {align-items:flex-start;flex-wrap:wrap}
+}
+@media (max-width:360px) {
+  main.shell,footer.shell,.top.shell {width:calc(100% - 28px)}
+  .panel {padding:18px}
+  .capture-actions {grid-template-columns:minmax(0,1fr)}
+  .capture-actions button {white-space:normal;min-height:46px}
+  .dashboard-heading h1 {font-size:34px}
+  .dashboard-mark {font-size:44px}
+  nav button {font-size:9px}
+}
