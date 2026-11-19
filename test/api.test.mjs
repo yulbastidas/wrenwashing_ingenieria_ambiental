@@ -1,7 +1,14 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import productHandler from '../api/product.js';
-import {summarize} from '../server.mjs';
+import {summarize,retainResearchSummary} from '../server.mjs';
+
+test('a failed reviewer preserves an existing cited AI summary but never its unreviewed verdict',()=>{
+  const r=retainResearchSummary({research:{status:'ready',sources:[{url:'https://example.com/report'}],summary:'Resumen real de la investigación.',assessment:{conclusion:'indicios'}}},{aiStatus:'unavailable',aiFailure:'quota'});
+  assert.equal(r.aiStatus,'ready');assert.equal(r.summary,'Resumen real de la investigación.');
+  assert.equal(r.aiStage,'research_only');assert.equal(r.assessment,undefined);
+  assert.equal(retainResearchSummary({research:{status:'unavailable',summary:'No verificable'}},{aiStatus:'unavailable'}).aiStatus,'unavailable');
+});
 
 test('Vercel adapter rejects invalid codes before any catalogue request', async () => {
   let status;

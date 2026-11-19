@@ -77,7 +77,8 @@ async function analyzeProduct(code, forceRefresh = false, supplied = null) {
       return {status:failure||unavailable?503:404,body:{error:messages[reason],reason,canIdentifyManually:true}};
     }
     report.research = research;
-    const analysis = research.status === 'unavailable' && research.httpStatus === 429 ? {aiStatus:'unavailable',aiFailure:'quota'} : await summarize(report);
+    let analysis = research.status === 'unavailable' && research.httpStatus === 429 ? {aiStatus:'unavailable',aiFailure:'quota'} : await summarize(report);
+    analysis = retainResearchSummary(report,analysis);
     if (analysis.assessment && research.status === 'ready') {
       analysis.assessment.scope = research.assessment?.scope || 'marca';
       if (analysis.assessment.scope === 'marca') analysis.summary = 'Evaluación de afirmaciones de la marca; aplicación a esta variante no confirmada. '+analysis.summary;
@@ -91,6 +92,17 @@ async function analyzeProduct(code, forceRefresh = false, supplied = null) {
   })();
   pendingProducts.set(code,pending);
   try { return await pending; } finally { pendingProducts.delete(code); }
+}
+
+export function retainResearchSummary(report,analysis) {
+  const research=report.research;
+  if (analysis.aiStatus==='unavailable' && research?.status==='ready' && research.sources?.length &&
+      typeof research.summary==='string' && research.summary.trim()) {
+    // Preserve the research model's actual output, without promoting its unchecked verdict.
+    return {aiStatus:'ready',aiProvider:'cloud',aiStage:'research_only',aiReviewStatus:'unavailable',
+      aiReviewFailure:analysis.aiFailure || 'provider',summary:research.summary.trim().slice(0,1600)};
+  }
+  return analysis;
 }
 
 export async function lookup(code, request = fetch) {

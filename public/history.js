@@ -36,6 +36,7 @@ export function normalizeHistory(value) {
       summary: typeof product.summary === 'string' ? product.summary.slice(0, 2000) : '',
       aiStatus: product.aiStatus === 'ready' ? 'ready' : 'disabled'
     };
+    if (product.aiStage==='research_only') {report.aiStage='research_only';report.aiReviewStatus='unavailable';}
     if (product.assessment && ['indicios','sin_indicios','insuficiente'].includes(product.assessment.conclusion)) {
       report.assessment = {
         conclusion: product.assessment.conclusion,
