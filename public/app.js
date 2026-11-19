@@ -1,5 +1,6 @@
 import {validCode} from './evaluation.js';
 import {normalizeHistory} from './history.js';
+import {initOffice} from './office.js';
 const $=s=>document.querySelector(s);
 const key='ecolupa.history.v1';
 let history=[];
@@ -18,14 +19,15 @@ function stopCamera(){
 }
 function page(name){
   if(name!=='scan') stopCamera();
-  for(const id of ['home','scan','history','compare','activity']) $('#'+id).hidden=id!==name;
+  for(const id of ['home','scan','office','history','compare','activity']) $('#'+id).hidden=id!==name;
   document.querySelectorAll('[data-page]').forEach(b=>b.dataset.page===name?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current'));
   if(name==='history') renderHistory();
   if(name==='compare') renderComparison();
   if(name==='activity') renderActivity();
   if(name==='home') renderHome();
+  if(name==='office') office.render();
   const titles = {home:'Tu espacio de consumo consciente',scan:'Escáner de productos',history:'Tu biblioteca de consultas',compare:'Comparador de productos',activity:'Tu actividad en EcoLupa'};
-  $('#page-location').textContent = titles[name];
+  $('#page-location').textContent = name==='office'?'EcoLupa · Propuesta académica para Banco Contactar':titles[name];
   window.scrollTo({top:0,behavior:'instant'});
 }
 function save(){
@@ -105,6 +107,8 @@ function showReport(r){
     result.append(node('p', 'La búsqueda web no aportó fuentes verificables en esta consulta. La evaluación usa la evidencia disponible del catálogo.', 'app-notice'));
   }
   addReportActions(r);
+  const officeButton=node('button','Orientar la gestión de este residuo','secondary');
+  officeButton.type='button';officeButton.onclick=()=>{office.prefill(r.name);page('office');};result.append(officeButton);
   $('#result-title').focus({preventScroll:true});result.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
 }
 async function analyze(raw, forceRefresh = false){
@@ -537,6 +541,8 @@ $('#launch-scan').onclick = () => { page('scan'); $('#barcode').focus({preventSc
 $('#launch-compare').onclick = () => page('compare');
 $('#launch-history').onclick = () => page('history');
 $('.brand').onclick = event => { event.preventDefault(); page('home'); };
+const office=initOffice(()=>{page('scan');$('#barcode').focus();});
+document.querySelector('#launch-office').onclick=()=>page('office');
 renderHome();
 
 // Library controls are generated here so they also work with older saved queries.

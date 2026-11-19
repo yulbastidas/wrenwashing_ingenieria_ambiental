@@ -396,3 +396,22 @@ footer {padding-top:30px}
 .research-evidence {margin-top:18px;border-top:1px solid var(--line);padding-top:15px}
 .research-evidence summary {cursor:pointer;font-weight:700;font-size:13px}
 .research-evidence p {white-space:pre-wrap;overflow-wrap:anywhere;margin-top:12px;max-height:500px;overflow:auto}
+/* Banco Contactar academic office workflow */
+.office-banner {display:flex;align-items:center;gap:24px;justify-content:space-between;padding:28px;border:1px solid #b9d3ab;border-radius:22px;background:linear-gradient(120deg,#e7f3d9,#fffefa);margin:20px 0 28px}
+.office-banner p {max-width:640px;font-size:15px}.office-banner button {flex-shrink:0}
+.office-scope {font-size:14px;margin:12px 0 22px;max-width:950px}
+.office-journey {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:24px 0}
+.office-journey article {padding:22px;border-radius:18px;background:#eaf0e4;border:1px solid var(--line)}
+.office-journey b {display:block;font-size:18px;margin-bottom:8px}.office-journey p {font-size:15px}.office-journey button {margin-top:12px}
+.office-grid {display:grid;grid-template-columns:1fr 1fr;gap:22px}
+#waste-guide label {margin-top:20px}#waste-guide select {width:100%;font-size:16px;min-height:48px}
+#waste-guide button {margin-top:24px;width:100%}
+.waste-result {border-top:6px solid #6e9655;min-height:270px}.waste-result[data-route=black] {border-top-color:#273a32}.waste-result[data-route=special],.waste-result[data-route=secure] {border-top-color:#b07a26}
+.waste-result li {font-size:16px;line-height:1.6;margin-bottom:14px}.waste-result p {font-size:15px}
+.bin-guide {display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}.bin-guide span {border:1px solid #cdd6c7;border-radius:12px;padding:14px;font-size:13px;background:white}.bin-guide span:nth-child(2) {background:#203b30;color:white}.bin-guide b {display:block;font-size:14px}
+.office-method {margin-top:20px}.office-method summary {cursor:pointer;font-weight:700;font-size:16px}.office-method p {margin-top:16px;font-size:15px}
+.office-record-form {display:grid;grid-template-columns:1fr 1fr;gap:18px}.office-record-form input,.office-record-form select {width:100%;min-height:48px;font-size:16px}
+.office-record-form button {grid-column:1/-1}.waste-record {display:flex;justify-content:space-between;align-items:center;gap:16px;padding:18px 0;border-bottom:1px solid var(--line)}.waste-record:last-child {border:0}.waste-record p {overflow-wrap:anywhere}
+nav button[data-page=office]::before {content:'♻'}
+@media (max-width:900px) {.office-grid {grid-template-columns:1fr}.office-banner {align-items:flex-start;flex-direction:column}}
+@media (max-width:700px) {nav {grid-template-columns:repeat(6,minmax(0,1fr))!important}.office-journey,.office-record-form {grid-template-columns:1fr}.office-banner {padding:22px}.office-journey article {padding:18px}#office .section-heading {flex-wrap:wrap;gap:14px}#office .activity-metrics {grid-template-columns:1fr}.office-record-form button {grid-column:auto}}

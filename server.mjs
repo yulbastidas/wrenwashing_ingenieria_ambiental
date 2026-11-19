@@ -39,7 +39,7 @@ function findBrandContext(brands) {
   if (names.includes('danone')) return danoneContext;
   return null;
 }
-const assets = {'/':['index.html','text/html'], '/style.css':['style.css','text/css'], '/app.js':['app.js','text/javascript'], '/evaluation.js':['evaluation.js','text/javascript'], '/history.js':['history.js','text/javascript']};
+const assets = {'/':['index.html','text/html'], '/style.css':['style.css','text/css'], '/app.js':['app.js','text/javascript'], '/evaluation.js':['evaluation.js','text/javascript'], '/history.js':['history.js','text/javascript'], '/office.js':['office.js','text/javascript'], '/circular.js':['circular.js','text/javascript']};
 const fields = 'product_name,product_name_es,brands,labels_tags,environmental_score_grade,ecoscore_grade';
 const productCache = new Map();
 const pendingProducts = new Map();
