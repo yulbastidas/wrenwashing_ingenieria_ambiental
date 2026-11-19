@@ -73,7 +73,7 @@ async function analyzeProduct(code, forceRefresh = false, supplied = null) {
     if (!report) {
       const failure=research.status==='unavailable';
       const reason=research.httpStatus===429?'quota':failure?'search_unavailable':unavailable?'catalogue_unavailable':'not_found';
-      const messages={quota:'La búsqueda con IA alcanzó un límite de Groq. No pudimos completar la identificación ahora. Puedes indicar nombre y marca o reintentar más tarde.',search_unavailable:'La búsqueda con IA no respondió correctamente y los catálogos no confirmaron el producto. Puedes continuar indicando nombre y marca.',catalogue_unavailable:'Uno o más catálogos no respondieron. Esto no confirma que el producto no exista. Puedes continuar con nombre y marca.',not_found:'No encontramos una identidad verificable para este código. Escribe el nombre y la marca del envase para investigar el producto.'};
+      const messages={quota:'Groq alcanzó un límite temporal. Conservamos tu código; vuelve a analizarlo cuando el servicio esté disponible.',search_unavailable:'La búsqueda con IA falló y no completamos la identificación. Vuelve a analizar el mismo código.',catalogue_unavailable:'Uno o más catálogos no respondieron. Esto no significa que el producto no exista. Vuelve a analizar el código.',not_found:'Este código no tuvo una coincidencia verificable en las fuentes consultadas. No podemos atribuirle un producto ni un veredicto sin identificarlo.'};
       return {status:failure||unavailable?503:404,body:{error:messages[reason],reason,canIdentifyManually:true}};
     }
     report.research = research;

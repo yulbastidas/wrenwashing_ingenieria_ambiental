@@ -119,8 +119,7 @@ async function analyze(raw, forceRefresh = false, supplied = null){
   const previous=history.find(entry=>entry.code===code);
   if (code.startsWith('manual:') && previous) supplied={name:previous.name,brand:previous.brand};
   if(!supplied && !validCode(code)){
-    status(/^\d+$/.test(code)?`El número tiene ${code.length} dígitos${[8,12,13,14].includes(code.length)?' pero su dígito de control no coincide':'; se aceptan 8, 12, 13 o 14'}. No se ha buscado otro código. Puedes continuar con el nombre y la marca.`:'Escribe solo el número bajo las barras, o continúa con nombre y marca.');
-    $('#manual-identification').open=true;return;
+    status('No pudimos leer un código de producto válido. Vuelve a escanear el código completo o revisa el número bajo las barras.');return;
   }
   const savedReport = history.find(entry => entry.code === code);
   if (!forceRefresh && savedReport?.research?.status === 'ready' && savedReport.aiStatus === 'ready' &&
@@ -150,7 +149,7 @@ async function analyze(raw, forceRefresh = false, supplied = null){
         status('Mostrando la última consulta guardada.');
       } else {
         status(report.error);
-        if (report.canIdentifyManually) {$('#manual-identification').open=true;showMissingProduct(code,report.error);}
+        if (report.canIdentifyManually) showMissingProduct(code,report.error);
       }
       return;
     }
@@ -607,7 +606,7 @@ function showMissingProduct(code,message) {
   result.replaceChildren(node('div', 'CÓDIGO ' + code, 'section-tag'),
     node('h2', 'Producto pendiente de identificar'),
     node('p', message || 'Escribe el nombre y la marca del envase para investigar sus afirmaciones ambientales.'));
-  const continueButton=node('button','Continuar con nombre y marca','primary');continueButton.type='button';continueButton.onclick=()=>{$('#manual-identification').open=true;$('#manual-name').focus();};result.append(continueButton);
+  const retryButton=node('button','Volver a analizar el código','primary');retryButton.type='button';retryButton.onclick=()=>analyze(code,true);result.append(retryButton);
   const sources = node('div', '', 'sources');
   result.append(sources);
   for (const [name, url] of [
